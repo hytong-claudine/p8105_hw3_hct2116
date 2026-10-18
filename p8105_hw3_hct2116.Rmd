@@ -92,3 +92,51 @@ temperature_plot + snowfall_plot
 ```
 
 
+## Problem 2: accelerometer data
+### Load, clean, merge, tidy
+```{r}
+nhanes_covar = read_csv("nhanes_covar.csv", skip = 4) 
+nhanes_accel = read.csv("nhanes_accel.csv")
+
+nhanes_merged =
+  nhanes_covar %>%
+  inner_join(nhanes_accel, by = "SEQN") %>% 
+  filter(age >= 21, !is.na(sex),!is.na(age), !is.na(BMI), !is.na(education)) %>% 
+  mutate(
+    sex = factor(sex, levels = c(1, 2), labels = c("Men", "Women")),
+    education = factor(education, levels = c(1, 2, 3), labels = c("Less than high school", "High school equivalent", "More than high school"))) 
+
+nhanes_long = 
+  nhanes_merged %>% 
+  pivot_longer(
+    cols = starts_with("min"),
+    names_to = "minute",
+    names_prefix = "min",
+    names_transform = list(minute = as.integer),
+    values_to = "MIMS"
+  )
+```
+
+### Participant counts by sex and education
+```{r}
+sex_and_education = nhanes_merged %>% 
+  count(sex, education, name = "participants") %>% 
+  pivot_wider(names_from = sex,
+              values_from = participants)
+```
+### Age distribution visualization
+```{r}
+ggplot(
+  nhanes_merged,
+  aes(x = sex, y = age, fill = sex)
+) +
+  geom_boxplot(alpha = .7, na.rm = TRUE) +
+  facet_wrap(~ education) +
+  labs(
+    x = "Sex",
+    y = "Age (years)",
+    title = "Age Distributions by Sex and Education Category"
+  )
+```
+
+
