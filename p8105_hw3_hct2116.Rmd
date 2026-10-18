@@ -1,0 +1,18 @@
+---
+title: "p8105_hw3_hct2116"
+author: "Haoyun Tong"
+date: "2026-10-18"
+output: github_document
+---
+
+```{r setup}
+library(tidyverse)
+library(p8105.datasets)
+data("ny_noaa")
+view(ny_noaa)
+```
+
+## Problem 1: NY NOAA
+
+### Load the data and describe it
+`ny_noaa` data contain the daily weather observations from 747 New York weather stations from 1981 through 2010. There are 2,595,176 rows and 7 columns. Each row represents one station-day. The measured variables are `prcp`, `snow`, `snwd`, and `tmax`/`tmin`. Missingness is noticeable, especially for max/min temperatures (44% NA) and snow depth (23% NA). 
