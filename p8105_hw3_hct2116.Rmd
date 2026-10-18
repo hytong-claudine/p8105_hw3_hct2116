@@ -124,6 +124,8 @@ sex_and_education = nhanes_merged %>%
   pivot_wider(names_from = sex,
               values_from = participants)
 ```
+In the less-than-high-school category, there are 28 men and 27 women. In the high-school-equivalent category, there are 35 men and 23 women. In the more-than-high-school category, there are 56 men and 59 women.
+
 ### Age distribution visualization
 ```{r}
 ggplot(
@@ -138,5 +140,44 @@ ggplot(
     title = "Age Distributions by Sex and Education Category"
   )
 ```
+Among participants with less than a high school education, men and women have similar age distributions. The median ages are around 60 and 61 years. In the high-school-equivalent category, women have a higher median age (about 62 years) than men (about 53 years), and the age distributions are relatively wide for both groups. In the more-than-high-school category, both men and women are younger, with respectively median ages around 44 and 41 years.
 
+### Total activity over the day vs age
+```{r}
+nhanes_daily =
+  nhanes_merged %>%
+  mutate(
+    total_activity = rowSums(
+      pick(starts_with("min")),
+      na.rm = TRUE
+    )
+  ) %>% 
+  relocate(total_activity, .before = min1)
 
+ggplot(nhanes_daily, aes(x = age, y = total_activity, color = sex)) +
+  geom_point(alpha = .5, na.rm = TRUE) +
+  geom_smooth(se = FALSE) +
+  facet_grid(~ education) +
+  labs(x = "Age (years)", y = "Total daily MIMS", color = "Sex",
+       title = "Total daily activity by age, sex, and education")
+```
+Particularly total daily activity is lower among older participants, but the relationship varies by education category and sex. For less than high school group, the decline is steep after a peak at 60 years old. For high school equivalent group, activity generally peaks around ages 35–45 and then declines with age for both sexes. Women appear to have a much higher activity levels than men around ages 30–50. For more than high school group, activity levels are relatively stable at younger and middle ages, followed by a decline before 60 years old for both men and women, and men generally appear to have lower activity levels than women.
+
+### 24 hour mean activity
+```{r}
+minute_summary =
+  nhanes_long %>%
+  group_by(education, sex, minute) %>%
+  summarise(mean_MIMS = mean(MIMS, na.rm = TRUE),
+            n_observed = sum(!is.na(MIMS)), .groups = "drop")
+
+ggplot(minute_summary, aes(x = minute, y = mean_MIMS, color = sex)) +
+  geom_line(alpha = .5, linewidth = .2, na.rm = TRUE) +
+  geom_smooth(se = FALSE, linewidth = .8) +
+  facet_grid(~ education) +
+  scale_x_continuous(breaks = c(1, 360, 720, 1080, 1440),
+                     labels = c("12 AM", "6 AM", "12 PM", "6 PM", "12 AM")) +
+  labs(x = "Time of day", y = "Mean MIMS per minute", color = "Sex",
+       title = "Average 24-hour activity by education and sex")
+```
+All three education groups have similar daily activity patterns. Activity is relatively low around midnight to 5–6 AM, rises sharply after approximately 6 AM, and peaks around noon. It then generally declines during the evening and drops steeply toward midnight. Also, women generally have higher activity levels than men during the daytime, especially among participants with a high-school-equivalent or more-than-high-school education. In the less-than-high-school category, men's and women's activity curves are more similar and they cross at several times.
