@@ -15,4 +15,28 @@ view(ny_noaa)
 ## Problem 1: NY NOAA
 
 ### Load the data and describe it
-`ny_noaa` data contain the daily weather observations from 747 New York weather stations from 1981 through 2010. There are 2,595,176 rows and 7 columns. Each row represents one station-day. The measured variables are `prcp`, `snow`, `snwd`, and `tmax`/`tmin`. Missingness is noticeable, especially for max/min temperatures (44% NA) and snow depth (23% NA). 
+`ny_noaa` data contain the daily weather observations from 747 New York weather stations from 1981 through 2010. There are 2,595,176 rows and 7 columns. Each row represents one station-day. The measured variables are `prcp`, `snow`, `snwd`, and `tmax`/`tmin`. Missingness is noticeable, especially for max/min temperatures (44% NA) and snow depth (23% NA). Addition to that, there are 15% of snowfall and 6% of precipitation missing. The missingness limits the comparisons between records from different years.
+
+### Cleaning and check snowfall values
+```{r}
+noaa_clean =
+  ny_noaa %>%
+  mutate(
+    date = as.Date(date),
+    year = year(date),
+    month = month(date),
+    day = day(date),
+    across(c(prcp, snow, snwd, tmax, tmin),
+           ~ as.numeric(as.character(.x))),
+    prcp = prcp / 10, 
+    tmax = tmax / 10, 
+    tmin = tmin / 10
+  )
+
+noaa_clean %>%
+  count(snow, sort = TRUE) %>%
+  slice_head(n = 5)
+```
+
+I created numeric year, month, and day variables from `date`. The data stores precipitation in tenths of a millimeter and temperatures in tenths of a degree Celsius, so I divided those columns by 10 to get the reasonable units. Snowfall and snow depth are already in millimeters so no change was made. 
+0 mm is by far the most common snowfall value. The next most common values include 25, 13, and 51 mm. 0 is common because most records there is no snowfall.
