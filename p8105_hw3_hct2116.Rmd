@@ -39,4 +39,26 @@ noaa_clean %>%
 ```
 
 I created numeric year, month, and day variables from `date`. The data stores precipitation in tenths of a millimeter and temperatures in tenths of a degree Celsius, so I divided those columns by 10 to get the reasonable units. Snowfall and snow depth are already in millimeters so no change was made. 
-0 mm is by far the most common snowfall value. The next most common values include 25, 13, and 51 mm. 0 is common because most records there is no snowfall.
+0 mm is by far the most common snowfall value. The next most common values include 25, 13, and 51 mm. 0 is common because in most records there is no snowfall.
+
+### two-panel plot for averaged Jan and July max t by station and year
+```{r}
+station_monthly_tmax =
+  noaa_clean %>%
+  filter(month %in% c(1, 7)) %>%
+  group_by(id, year, month) %>%
+  summarise(mean_tmax = mean(tmax, na.rm = TRUE), .groups = "drop") %>%
+  filter(is.finite(mean_tmax)) %>%
+  mutate(month = factor(month, 
+                        labels = c("January", "July")))
+
+ggplot(station_monthly_tmax,
+       aes(x = year, y = mean_tmax, group = interaction(id, month))) +
+  geom_line(alpha = 0.2, linewidth = 0.25) +
+  geom_smooth(aes(group = month), se = FALSE) +
+  facet_grid(. ~ month) +
+  labs(x = "Year", y = "Mean daily maximum temperature (°C)",
+       title = "Mean January and July max temperature by station")
+```
+The pplot is divided into two panel, separately represening January and July. In each panel, one line represents the record from one station. The blue line summarize the broad temporal pattern. January plot has much more variation. July temperatures are considerably higher and appear less variable across stations. Some station-year observations appear higher or lower than others (outliers) and may need further check.
+
