@@ -225,6 +225,28 @@ citi_bike %>%
              color = month, shape = month)) +
   geom_line() +
   geom_point() +
-  facet_wrap(~ year, ncol = 1)
+  facet_wrap(~ year, ncol = 1) +
+  labs(x = "Day of the week", y = "Median ride duration (minutes)",
+       color = "Month", shape = "Month", linetype = "Month",
+       title = "Median Citi Bike ride duration by weekday, month, and year")
 ```
+July rides have longer median duration than January rides for every weekday in both years. Weekend medians are also generally longer than weekday medians, with the largest weekend increases in July. Median duration are shorter in the 2024 samples than in the corresponding 2020 samples.
 
+### Ride duration distributions by month, membership, and bike type in 2024
+```{r}
+citi_bike %>% 
+  filter(year == 2024) %>% 
+  ggplot(aes(x = month, y = duration, fill = month)) +
+  geom_boxplot(alpha = .5, linewidth = 0.3, na.rm = TRUE) +
+  geom_violin(alpha = .2, color = NA, na.rm = TRUE) + 
+  facet_grid(member_casual ~ rideable_type,
+             labeller = labeller(
+               member_casual = c(member = "Citi Bike members",
+                                  casual = "Casual riders"),
+               rideable_type = c(classic_bike = "Classic bike",
+                                 electric_bike = "Electric bike"))) + 
+  scale_y_log10() +
+  labs(x = "Month", y = "Ride duration (log 10 of minutes)",
+       title = "2024 ride duration by month, rider type, and bike type")
+```
+Casual riders generally have longer ride durations than members, and median ride durations tend to be longer in July than in January. The distributions are right-skewed, with most rides lasting relatively short periods and a small number of much longer rides. The combination of violin plots and boxplots compares both the overall distribution shapes and the medians and interquartile ranges.
