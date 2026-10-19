@@ -181,3 +181,30 @@ ggplot(minute_summary, aes(x = minute, y = mean_MIMS, color = sex)) +
        title = "Average 24-hour activity by education and sex")
 ```
 All three education groups have similar daily activity patterns. Activity is relatively low around midnight to 5–6 AM, rises sharply after approximately 6 AM, and peaks around noon. It then generally declines during the evening and drops steeply toward midnight. Also, women generally have higher activity levels than men during the daytime, especially among participants with a high-school-equivalent or more-than-high-school education. In the less-than-high-school category, men's and women's activity curves are more similar and they cross at several times.
+
+## Problem 3: citi Bike
+### Import, clean, tidy and describe
+```{r}
+citi_raw = bind_rows(
+  read.csv("./citibike/Jan 2020 Citi.csv") %>% mutate(year = 2020, month = "January"),
+  read.csv("./citibike/Jan 2024 Citi.csv") %>% mutate(year = 2024, month = "January"),
+  read.csv("./citibike/July 2020 Citi.csv") %>% mutate(year = 2020, month = "July"),
+  read.csv("./citibike/July 2024 Citi.csv") %>% mutate(year = 2024, month = "July"))
+
+citi_bike = citi_raw %>% 
+  mutate(month = factor(month, levels = c("January", "July")),
+         weekdays = factor(weekdays, levels = c("Monday", "Tuesday", "Wednesday","Thursday", "Friday", "Saturday", "Sunday"), ordered = TRUE)) %>% 
+  relocate(year, month, .after = ride_id)
+```
+The combined data contain 99,485 sampled rides and 9 variables: the seven original columns plus `year` and `month`. The rows represent a 1% sample of rides from January and July of 2020 and 2024, restricted by the assignment to rides shorter than four hours. Each record includes a ride ID, bike type, weekday, ride duration in minutes, start and end station names, and rider type (whether it's `member` or `casual`), along with its sampled month and year. I ordered `weekdays` as an factor from Monday through Sunday. Other variables like bike type, rider type, month, and year are represented categorically or numerically according to the meaning and the usefulness for later plot summaries.
+
+### Ride counts by month, year, and rider type
+```{r}
+ride_counts = citi_bike %>%
+  count(year, month, member_casual, name = "rides") %>% 
+  pivot_wider(names_from = member_casual, 
+              values_from = rides)
+```
+The counts by month, year, and rider type are stored in `ride_counts`. Members ride more than casual riders in all eight sampling period. There are more rides in July than in January. And also there are a general increase in number of rides in 2024 compared to 2020.
+
+
