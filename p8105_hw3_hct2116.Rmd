@@ -207,4 +207,24 @@ ride_counts = citi_bike %>%
 ```
 The counts by month, year, and rider type are stored in `ride_counts`. Members ride more than casual riders in all eight sampling period. There are more rides in July than in January. And also there are a general increase in number of rides in 2024 compared to 2020.
 
+### 5 most popular starting stations (July24)
+```{r}
+popular_start = citi_bike %>% 
+  filter(year == 2024, month == "July") %>%
+  count(start_station_name, name = "rides", sort = TRUE) %>% 
+  slice_head(n = 5)
+```
+
+### Effects of day of the week, month, and year on median ride duration
+```{r}
+citi_bike %>%
+  group_by(year, month, weekdays) %>%
+  summarise(median_duration = median(duration, na.rm = TRUE),
+            .groups = "drop") %>%
+  ggplot(aes(x = weekdays, y = median_duration, group = month,
+             color = month, shape = month)) +
+  geom_line() +
+  geom_point() +
+  facet_wrap(~ year, ncol = 1)
+```
 
